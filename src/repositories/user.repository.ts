@@ -1,27 +1,46 @@
-import db from '../config/db.config.ts';
+import db from "../config/db.config";
+import type {
+  CreateCustomerInput,
+  Customer,
+  UpdateCustomerInput,
+} from "../db/types";
 
 class UserRepository {
-  async createUser(userData: any) {
-    const [newUser] = await db('users')
+  async createUser(userData: CreateCustomerInput): Promise<Customer> {
+    const [newUser] = await db("customers")
       .insert(userData)
-      .returning('*');
+      .returning("*");
     return newUser;
   }
 
-  async getUserById(id: any) {
-    return await db('users').where({ id }).first();
+  async getAllUsers(): Promise<Customer[]> {
+    return db("customers").select("*");
   }
 
-  async updateUser(id: any, updateData: any) {
-    const [updatedUser] = await db('users')
+  async getUserById(id: number): Promise<Customer | undefined> {
+    return db("customers").where({ id }).first();
+  }
+
+  async getUserByEmail(email: string): Promise<Customer | undefined> {
+    return db("customers").where({ email }).first();
+  }
+
+  async updateUser(
+    id: number,
+    updateData: UpdateCustomerInput
+  ): Promise<Customer | undefined> {
+    const [updatedUser] = await db("customers")
       .where({ id })
-      .update(updateData)
-      .returning('*');
+      .update({
+        ...updateData,
+        updated_at: db.fn.now(),
+      })
+      .returning("*");
     return updatedUser;
   }
 
-  async deleteUser(id: any) {
-    return await db('users').where({ id }).del();
+  async deleteUser(id: number): Promise<number> {
+    return db("customers").where({ id }).del();
   }
 }
 
