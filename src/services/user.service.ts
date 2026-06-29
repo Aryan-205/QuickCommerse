@@ -4,7 +4,7 @@ import type {
   Customer,
   PublicCustomer,
   UpdateCustomerInput,
-} from "../db/types";
+} from "../db/types.ts";
 
 function toPublicCustomer(customer: Customer): PublicCustomer {
   const { password: _password, ...publicCustomer } = customer;
@@ -13,12 +13,12 @@ function toPublicCustomer(customer: Customer): PublicCustomer {
 
 export default class UserService {
   public async createUser(
-    userData: CreateCustomerInput
+    userData: CreateCustomerInput,
   ): Promise<PublicCustomer> {
-    const { name, email, password, phone, address } = userData;
+    const { name, email, password, phone } = userData;
 
-    if (!name || !email || !password || !phone || !address) {
-      throw new Error("name, email, password, phone, and address are required");
+    if (!name || !email || !password || !phone) {
+      throw new Error("name, email, password and phone are required");
     }
 
     const existingUser = await userRepository.getUserByEmail(email);
@@ -45,7 +45,7 @@ export default class UserService {
 
   public async updateUser(
     id: number,
-    updateData: UpdateCustomerInput
+    updateData: UpdateCustomerInput,
   ): Promise<PublicCustomer> {
     const user = await userRepository.updateUser(id, updateData);
     if (!user) {

@@ -1,37 +1,49 @@
-import db from '../config/db.config.ts';
+import { db } from '../db/db.ts'
+import type { CreateItemInput, Item, UpdateItemInput } from '../db/types.ts'
 
 class ProductRepository {
-  // CREATE
-  async createProduct(productData: any) {
-    const [newProduct] = await db('products')
-      .insert(productData)
-      .returning('*');
-    return newProduct;
+  async createProduct(productData: CreateItemInput): Promise<Item> {
+    return db
+      .insertInto('items')
+      .values(productData)
+      .returningAll()
+      .executeTakeFirstOrThrow()
   }
 
-  // READ (All products)
-  async getAllProducts() {
-    return await db('products').select('*');
+  async getAllProducts(): Promise<Item[]> {
+    return db.selectFrom('items').selectAll().execute()
   }
 
-  // READ (By ID)
-  async getProductById(id: any) {
-    return await db('products').where({ id }).first();
+  async getProductById(id: number): Promise<Item | undefined> {
+    return db
+      .selectFrom('items')
+      .selectAll()
+      .where('id', '=', id)
+      .executeTakeFirst()
   }
 
-  // UPDATE
-  async updateProduct(id: any, updateData: any) {
-    const [updatedProduct] = await db('products')
-      .where({ id })
-      .update(updateData)
-      .returning('*');
-    return updatedProduct;
+  async updateProduct(
+    id: number,
+    updateData: UpdateItemInput,
+  ): Promise<Item | undefined> {
+    return db
+      .updateTable('items')
+      .set({
+        ...updateData,
+        updated_at: new Date().toISOString(),
+      })
+      .where('id', '=', id)
+      .returningAll()
+      .executeTakeFirst()
   }
 
-  // DELETE
-  async deleteProduct(id: any) {
-    return await db('products').where({ id }).del();
+  async deleteProduct(id: number): Promise<number> {
+    const result = await db
+      .deleteFrom('items')
+      .where('id', '=', id)
+      .executeTakeFirst()
+    return Number(result.numDeletedRows)
   }
 }
 
-export default new ProductRepository();
+export default new ProductRepository()
