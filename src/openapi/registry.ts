@@ -1,6 +1,7 @@
-import { OpenAPIRegistry, OpenApiGeneratorV3 } from "@asteasolutions/zod-to-openapi";
+import { OpenAPIRegistry, OpenApiGeneratorV3, extendZodWithOpenApi } from "@asteasolutions/zod-to-openapi";
 import { z } from "zod";
 
+extendZodWithOpenApi(z)
 export const registry = new OpenAPIRegistry();
 
 export const CreateUserSchema = registry.register(
@@ -69,6 +70,34 @@ registry.registerPath({
   }
 })
 
+registry.registerPath({
+  method: "get",
+  path: "/users/{id}",
+  operationId: "getUser",
+  summary: "Get a user by ID",
+  description: "Get a user by ID",
+  request: {
+    params: { content: { "application/json": { schema: z.object({ id: z.number() }) } } },
+  },
+  responses: {
+    200: {
+      description: "User found",
+      content: {
+        "application/json": {
+          schema: z.object({ user: UserSchema }),
+        }
+      }
+    },
+    404: {
+      description: "User not found",
+      content: {
+        "application/json": {
+          schema: z.object({ message: z.string() }),
+        }
+      }
+    }
+  }
+});
 export function generateOpenApiDocument() {
   const generator = new OpenApiGeneratorV3(registry.definitions);
   return generator.generateDocument({
