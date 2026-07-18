@@ -1,4 +1,5 @@
 import type { Response } from "express";
+import { ZodError } from "zod";
 
 export function handleControllerError(
   res: Response,
@@ -6,6 +7,16 @@ export function handleControllerError(
   notFoundStatus = 404,
   badRequestStatus = 400
 ) {
+  if (error instanceof ZodError) {
+    return res.status(400).json({
+      message: "Validation failed",
+      errors: error.errors.map((e) => ({
+        path: e.path.join("."),
+        message: e.message,
+      })),
+    });
+  }
+
   const message =
     error instanceof Error ? error.message : "Internal server error";
 
@@ -36,6 +47,7 @@ export function handleControllerError(
 
   return res.status(500).json({ message });
 }
+
 
 export function parseId(value: string, fieldName = "id"): number {
   const id = Number(value);

@@ -1,10 +1,21 @@
 import type { Response } from 'express'
+import { ZodError } from 'zod'
 
 export function handleError(
   res: Response,
   error: unknown,
   fallbackStatus = 500,
 ) {
+  if (error instanceof ZodError) {
+    return res.status(400).json({
+      message: 'Validation failed',
+      errors: error.errors.map((e) => ({
+        path: e.path.join('.'),
+        message: e.message,
+      })),
+    })
+  }
+
   const message =
     error instanceof Error ? error.message : 'Internal server error'
 
@@ -32,3 +43,4 @@ export function handleError(
 
   return res.status(fallbackStatus).json({ message })
 }
+
