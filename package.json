@@ -20,6 +20,7 @@
     "@asteasolutions/zod-to-openapi": "^9.0.0",
     "@types/express": "^5.0.6",
     "dotenv": "^17.4.2",
+    "env": "^0.0.2",
     "express": "^5.2.1",
     "kysely": "^0.29.2",
     "pg": "^8.22.0",
